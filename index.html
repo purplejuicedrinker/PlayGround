@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STARFALL TACTICS — Tetris Roguelike ☆ Anime Edition</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="bg-stars"></div>
+<div id="app">
+  <header id="topbar">
+    <div class="logo">STARFALL<span>TACTICS</span> <em>tetris roguelike</em></div>
+    <div class="top-stats">
+      <div class="pill">RUN <b id="hud-stage">1/5</b></div>
+      <div class="pill">SCORE <b id="hud-score">0</b></div>
+      <div class="pill">GOLD <b id="hud-gold">0</b></div>
+      <div class="pill">BEST <b id="hud-best">0</b></div>
+      <div class="top-btns">
+        <button id="btn-help" class="mini-btn" title="How to play (H)">?</button>
+        <button id="btn-mute" class="mini-btn" title="Mute (M)">♪</button>
+        <button id="btn-restart" class="mini-btn" title="Abandon run">↺</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="layout">
+    <!-- LEFT -->
+    <aside class="panel" id="left-panel">
+      <div class="char-card">
+        <div id="char-portrait"></div>
+        <div>
+          <div id="char-name">—</div>
+          <div id="char-title">—</div>
+        </div>
+      </div>
+      <div class="hp-row">
+        <label>HP <b id="hp-text">100/100</b></label>
+        <div class="bar"><div id="hp-fill"></div></div>
+      </div>
+      <button id="btn-skill" class="skill-btn" disabled>
+        <span id="skill-name">SKILL (E)</span>
+        <span id="skill-cd">READY</span>
+      </button>
+      <div id="skill-desc" class="desc"></div>
+      <h3>HOLD <span class="key">C</span></h3>
+      <canvas id="hold-canvas" width="120" height="80"></canvas>
+      <h3>RELICS <span id="relic-count">0</span></h3>
+      <div id="relic-list"></div>
+    </aside>
+
+    <!-- CENTER -->
+    <section id="center">
+      <div id="board-wrap">
+        <canvas id="game" width="300" height="600"></canvas>
+        <div id="board-fx"></div>
+        <div id="stage-banner" class="hidden"><h2 id="banner-title"></h2><p id="banner-sub"></p></div>
+      </div>
+      <div id="under-board">
+        <div class="combo-box">COMBO <b id="hud-combo">x0</b></div>
+        <div class="combo-box">LINES <b id="hud-lines">0</b></div>
+        <div class="combo-box">LEVEL <b id="hud-level">1</b></div>
+      </div>
+      <div id="controls-hint">
+        ← → move · ↓ soft drop · ↑/X rotate · Z rotate′ · SPACE hard drop · C hold · E skill · P pause
+      </div>
+    </section>
+
+    <!-- RIGHT -->
+    <aside class="panel" id="right-panel">
+      <div id="enemy-card">
+        <div id="enemy-sprite">👾</div>
+        <div class="enemy-info">
+          <div id="enemy-name">???</div>
+          <div id="enemy-title">Stage 1</div>
+        </div>
+      </div>
+      <div class="hp-row enemy">
+        <label>ENEMY HP <b id="enemy-hp-text"></b></label>
+        <div class="bar"><div id="enemy-hp-fill"></div></div>
+      </div>
+      <div class="hp-row intent">
+        <label>⚠ NEXT ATTACK <b id="attack-text"></b></label>
+        <div class="bar"><div id="attack-fill"></div></div>
+      </div>
+      <div id="enemy-intent" class="desc"></div>
+      <h3>NEXT <span class="key">3</span></h3>
+      <div id="next-row">
+        <canvas class="next-canvas" width="100" height="60"></canvas>
+        <canvas class="next-canvas" width="100" height="60"></canvas>
+        <canvas class="next-canvas" width="100" height="60"></canvas>
+      </div>
+      <h3>LOG</h3>
+      <div id="log"></div>
+    </aside>
+  </main>
+
+  <!-- SCREENS -->
+  <div id="screen-title" class="screen">
+    <div class="screen-inner title-inner">
+      <div class="kicker">★ TETRIS × ROGUELIKE × ANIME ★</div>
+      <h1>STARFALL<br/>TACTICS</h1>
+      <p class="tagline">Clear lines to slash monsters. Draft relics. Survive 5 stages. Defeat the Demon Lord.</p>
+      <h2>Choose your heroine</h2>
+      <div id="char-select"></div>
+      <button id="btn-start" class="big-btn">▶ START RUN</button>
+      <div class="howto-mini">Desktop keyboard recommended · Click blocks also work · All art + music generated in-code, no downloads</div>
+    </div>
+  </div>
+
+  <div id="screen-draft" class="screen hidden">
+    <div class="screen-inner">
+      <div class="kicker" id="draft-kicker">STAGE CLEAR!</div>
+      <h2 id="draft-title">Choose a relic (1 of 3)</h2>
+      <p class="tagline" id="draft-sub">Your run mutates here. Pick wisely.</p>
+      <div id="draft-cards"></div>
+      <div id="draft-heal-row">
+        <button id="btn-heal" class="big-btn secondary"></button>
+        <button id="btn-next-stage" class="big-btn ghost">SKIP → NEXT STAGE</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-over" class="screen hidden">
+    <div class="screen-inner">
+      <div class="kicker" id="over-kicker">GAME OVER</div>
+      <h2 id="over-title">Run ended</h2>
+      <p class="tagline" id="over-stats"></p>
+      <div id="over-relcis"></div>
+      <button id="btn-retry" class="big-btn">↺ NEW RUN</button>
+      <button id="btn-title" class="big-btn ghost">TITLE SCREEN</button>
+    </div>
+  </div>
+
+  <div id="screen-help" class="screen hidden">
+    <div class="screen-inner">
+      <h2>How to play</h2>
+      <div class="help-grid">
+        <div><b>Goal</b><br/>Each stage has an enemy with HP. Clearing lines deals damage. Kill it before it kills you. Survive all 5 stages to win. Death = run over (roguelike!).</div>
+        <div><b>Damage</b><br/>Single 1 · Double 3 · Triple 5 · Tetris 8 · +combo bonus · Back-to-back Tetris ×1.5. Perfect clear = +6.</div>
+        <div><b>Enemy attacks</b><br/>When the red timer fills, the enemy strikes: garbage rows + HP damage. Clearing lines pushes the timer back. Yuki can freeze it.</div>
+        <div><b>Relics</b><br/>After each kill, draft 1 of 3 cursed treasures. They stack and radically change your stacking strategy.</div>
+        <div><b>Keys</b><br/>←→ move · ↓ soft drop · ↑/X rotate CW · Z rotate CCW · Space hard drop · C hold · E skill · P pause · M mute.</div>
+        <div><b>Heroines</b><br/>🌸 Aiko (Idol): gold + skill wipes 2 rows.<br/>⚔️ Rin (Ronin): Tetris hits harder + 6-dmg slash.<br/>❄ Yuki (Mage): slower gravity + freezes time.</div>
+      </div>
+      <button id="btn-close-help" class="big-btn">CLOSE</button>
+    </div>
+  </div>
+
+  <div id="toast-layer"></div>
+  <div id="dmg-layer"></div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
